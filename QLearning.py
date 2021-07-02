@@ -9,17 +9,17 @@ from PyQt5.QtWidgets import QWidget,QApplication,QGraphicsView,QGraphicsScene
 import sys
 from BadZone import BadZone
 
+
+zone1=BadZone(10,10,20,11)
+zone2=BadZone(5,5,7,15)
+Map.AddWalls([zone1,zone2])
 game=Map.reset()
-# zone1=BadZone(30,30,40,40)
-# zone2=BadZone(15,15,18,30)
-# zone3=BadZone(18,30,30,32)
-# game.AddWalls([zone1,zone2,zone3])
 
 app = QApplication(sys.argv)
 
-n_episode=5000
+n_episode=10000
 gamma=1
-alpha=0.4
+alpha=0.3
 epsilon=0.1
 
 length_episode=[0] * n_episode
@@ -70,7 +70,47 @@ def q_learning(env,gamma,n_episode,alpha):
     return Q,policy
 
 
-optimal_Q,optimal_policy=q_learning(game,gamma,n_episode,alpha)
+def double_q_learning(env, gamma, n_episode, alpha):
+    """
+    Строит оптимальную стратегию методом двойного Q-обучения с
+    разделенной стратегией
+    @param env: имя окружающей среды OpenAI Gym
+    @param gamma: коэффициент обесценивания
+    @param n_episode: количество эпизодов
+    @return: оптимальные Q-функция и стратегия
+    """
+    n_action = env.player.action_space
+    n_state=Map.observation
+    Q1 = torch.zeros(n_state,n_action)
+    Q2 = torch.zeros(n_state,n_action)
+    for episode in range(n_episode):
+        env=Map.reset()
+        state=env.posPlayer()
+        is_done=False
+        while not is_done:
+            action = epsilon_greedy_policy(state, Q1 + Q2)
+            next_state, reward, is_done = env.step(action)
+            if (torch.rand(1).item() < 0.5):
+                best_next_action = torch.argmax(Q1[next_state])
+                td_delta = reward + gamma * Q2[next_state][best_next_action]- Q1[state][action]
+                Q1[state][action] += alpha * td_delta
+            else:
+                best_next_action = torch.argmax(Q2[next_state])
+                td_delta = reward + gamma * Q1[next_state][best_next_action]- Q2[state][action]
+                Q2[state][action] += alpha * td_delta
+            length_episode[episode] += 1
+            total_reward_episode[episode] += reward
+            if is_done:
+                break
+            state = next_state
+    policy = {}
+    Q = Q1 + Q2
+    for state in range(n_state):
+        policy[state] = torch.argmax(Q[state]).item()
+    return Q, policy
+                
+
+optimal_Q,optimal_policy=double_q_learning(game,gamma,n_episode,alpha)
 
 #print(optimal_policy)
 
@@ -109,8 +149,8 @@ i=0
 j=0
 c=18
 
-while i<50:
-    while j<50:
+while i<30:
+    while j<30:
         if game.chart[i][j]==1:#барьер
             scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,0,255),QBrush(QColor(0,0,255)))
         if game.chart[i][j]==2:#финиш

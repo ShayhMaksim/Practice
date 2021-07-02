@@ -7,14 +7,21 @@ import numpy as np
 import random
 #класс карты
 class Map:
-    
+    zones: List[BadZone]=[]
+    observation=30*30#кол-во исходов
     def __init__(self,x0,y0,xf,yf) -> None:
-        self.chart=np.zeros((50,50))
+        self.chart=np.zeros((30,30))
 
-        for i in range(0,50):
+        if self.zones!=[]:
+            for zone in Map.zones:
+                for i in range(zone.x0,zone.x):
+                    for j in range(zone.y0,zone.y):
+                        self.chart[i][j]=zone.symbol
+
+        for i in range(0,30):
             self.chart[0][i]=1
-            self.chart[49][i]=1
-            self.chart[i][49]=1
+            self.chart[29][i]=1
+            self.chart[i][29]=1
             self.chart[i][0]=1
 
 
@@ -24,16 +31,15 @@ class Map:
         self.chart[x0][y0]=self.player.symbol
         self.chart[xf][yf]=self.finish.symbol
 
+    @classmethod
     def AddWalls(self,zones:List[BadZone]):
         self.zones=zones
-        for zone in zones:
-            for i in range(zone.x0,zone.x):
-                for j in range(zone.y0,zone.y):
-                    self.chart[i][j]=zone.symbol
+        
 
     @classmethod 
     def reset(self):
-        return Map(10,10,45,45)
+        #Map(random.randint(2,15),random.randint(2,15),45,45)
+        return Map(random.randint(2,4),random.randint(2,4),27,27)#Map(5,5,45,45)
     
     def posPlayer(self):
         return self.encode(self.player.x,self.player.y)
@@ -45,15 +51,15 @@ class Map:
 
     def encode(self,player_x,player_y):
         i = player_x
-        i *= 50
+        i *= 30
         i += player_y
         return i
 
     
     def decode(self,i):
         out=[]
-        out.append(i%50)
-        i=i // 50
+        out.append(i%30)
+        i=i // 30
         out.append(i)
-        assert(0<=i<50)
+        assert(0<=i<30)
         return reversed(out)
