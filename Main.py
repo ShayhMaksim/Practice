@@ -22,8 +22,8 @@ i=0
 j=0
 c=18
 
-while i<50:
-    while j<50:
+while i<30:
+    while j<30:
         if mapp.chart[i][j]==1:
             scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,0,255),QBrush(QColor(0,0,255)))
         if mapp.chart[i][j]==2:

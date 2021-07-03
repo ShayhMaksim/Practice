@@ -10,17 +10,23 @@ import sys
 from BadZone import BadZone
 
 
-zone1=BadZone(10,10,20,11)
+zone1=BadZone(10,10,20,15)
 zone2=BadZone(5,5,7,15)
 Map.AddWalls([zone1,zone2])
 game=Map.reset()
 
 app = QApplication(sys.argv)
 
-n_episode=10000
+n_episode=5000
+#q_learning
+# gamma=1
+# alpha=0.3
+# epsilon=0.1
+
+#sarsa
+epsilon=0.03
+alpha=0.4
 gamma=1
-alpha=0.3
-epsilon=0.1
 
 length_episode=[0] * n_episode
 total_reward_episode=[0] * n_episode
@@ -110,13 +116,60 @@ def double_q_learning(env, gamma, n_episode, alpha):
     return Q, policy
                 
 
-optimal_Q,optimal_policy=double_q_learning(game,gamma,n_episode,alpha)
+def sarsa(env, gamma, n_episode, alpha):
+    """
+    Строит оптимальную стратегию методом SARSA с единой стратегией
+    @param env: имя окружающей среды OpenAI Gym
+    @param gamma: коэффициент обесценивания
+    @param n_episode: количество эпизодов
+    @return: оптимальные Q-функция и стратегия
+    """
+    n_action = env.player.action_space
+    Q = defaultdict(lambda: torch.zeros(n_action))
+    for episode in range(n_episode):
+        env=Map.reset()
+        state=env.posPlayer()
+        is_done=False
+        action = epsilon_greedy_policy(state, Q)
+        while not is_done:
+            next_state, reward, is_done = env.step(action)
+            next_action = epsilon_greedy_policy(next_state, Q)
+            td_delta = reward + gamma * Q[next_state][next_action]- Q[state][action]
+            Q[state][action] += alpha * td_delta
+            length_episode[episode] += 1
+            total_reward_episode[episode] += reward
+            if is_done:
+                break
+            state = next_state
+            action = next_action
+    policy = {}
+    for state, actions in Q.items():
+        policy[state] = torch.argmax(actions).item()
+    return Q, policy
 
-#print(optimal_policy)
 
 
-env=Map.reset()
-state=env.posPlayer()
+
+
+optimal_Q,optimal_policy=sarsa(game,gamma,n_episode,alpha)
+
+# alpha_options = [0.3,0.4, 0.5, 0.6]
+# epsilon_options = [0.2,0.1, 0.03, 0.01]
+# n_episode = 1000
+
+# for alpha in alpha_options:
+#     for epsilon in epsilon_options:
+#         length_episode = [0] * n_episode
+#         total_reward_episode = [0] * n_episode
+#         q_learning(game, gamma, n_episode, alpha)
+#         reward_per_step = [reward/float(step) for reward, step in zip(total_reward_episode, length_episode)]
+#         print('alpha: {}, epsilon: {}'.format(alpha, epsilon))
+#         print('Среднее вознаграждение в {} эпизодах: {}'.format(n_episode, sum(total_reward_episode) / n_episode))
+#         print('Средняя длина {} эпизодов: {}'.format(n_episode, sum(length_episode) / n_episode))
+#         print('Среднее вознаграждение на одном шаге в {} эпизодах:{}\n'.format(n_episode, sum(reward_per_step) / n_episode))
+
+game=Map(3,3,27,27)
+state=game.posPlayer()
 #env.render()
 is_done=False
 while not is_done:

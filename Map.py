@@ -24,9 +24,9 @@ class Map:
             self.chart[i][29]=1
             self.chart[i][0]=1
 
-
-        self.player=Player(x0,y0,self.chart)
         self.finish=Finish(xf,yf)
+        self.player=Player(x0,y0,self.chart,self.finish)
+        
 
         self.chart[x0][y0]=self.player.symbol
         self.chart[xf][yf]=self.finish.symbol
@@ -39,7 +39,12 @@ class Map:
     @classmethod 
     def reset(self):
         #Map(random.randint(2,15),random.randint(2,15),45,45)
-        return Map(random.randint(2,4),random.randint(2,4),27,27)#Map(5,5,45,45)
+        x=random.randint(2,4)
+        y=random.randint(2,4)
+        if x == 27 and y == 27:
+            x=2
+            y=2
+        return Map(3,3,27,27)#Map(5,5,45,45)
     
     def posPlayer(self):
         return self.encode(self.player.x,self.player.y)
