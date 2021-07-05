@@ -1,4 +1,6 @@
-import random 
+import random
+
+from torch.nn.functional import normalize 
 from Finish import Finish
 class Player:
     '''
@@ -23,6 +25,7 @@ class Player:
         self.isDone=False
         self.finish=finish
         self.normalize=self.Distance()
+        #max(abs(self.x-self.finish.x),abs(self.y-self.finish.y))
 
     def Distance(self):
         return ((self.x-self.finish.x)**2+(self.y-self.finish.y)**2)**0.5
@@ -37,8 +40,9 @@ class Player:
         #     return
         penalty0=-1
         penalty4=-500
-        penalty5=-200
-        bonus=500
+        penalty5=-20
+        bonus=self.normalize
+        c=2**0.5
         if command==0:
             if self.map[self.x-1][self.y]!=1:
                 if self.map[self.x-1][self.y]==4:
@@ -50,7 +54,7 @@ class Player:
                 self.map[self.x][self.y]=5
                 self.x=self.x-1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus
@@ -66,7 +70,7 @@ class Player:
                 self.map[self.x][self.y]=5
                 self.x=self.x+1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus
@@ -82,7 +86,7 @@ class Player:
                 self.map[self.x][self.y]=5
                 self.y=self.y-1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus
@@ -98,7 +102,7 @@ class Player:
                 self.map[self.x][self.y]=5
                 self.y=self.y+1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus
@@ -110,12 +114,12 @@ class Player:
                 elif self.map[self.x-1][self.y-1]==5:
                     self.score=penalty5
                 else:
-                    self.score=penalty0
+                    self.score=penalty0*c
                 self.map[self.x][self.y]=5
                 self.x=self.x-1
                 self.y=self.y-1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus
@@ -127,12 +131,12 @@ class Player:
                 elif self.map[self.x-1][self.y+1]==5:
                     self.score=penalty5
                 else:
-                    self.score=penalty0
+                    self.score=penalty0*c
                 self.map[self.x][self.y]=5
                 self.x=self.x-1
                 self.y=self.y+1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus
@@ -144,12 +148,12 @@ class Player:
                 elif self.map[self.x+1][self.y-1]==5:
                     self.score=penalty5
                 else:
-                    self.score=penalty0
+                    self.score=penalty0*c
                 self.map[self.x][self.y]=5
                 self.x=self.x+1
                 self.y=self.y-1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus
@@ -161,12 +165,12 @@ class Player:
                 elif self.map[self.x+1][self.y+1]==5:
                     self.score=penalty5
                 else:
-                    self.score=penalty0
+                    self.score=penalty0*c
                 self.map[self.x][self.y]=5
                 self.x=self.x+1
                 self.y=self.y+1
                 #self.score=-1
-                self.score=self.score*self.Distance()/self.normalize
+                #self.score=self.score*self.Distance()/self.normalize
                 if self.map[self.x][self.y]==2:
                     self.isDone=True
                     self.score=bonus

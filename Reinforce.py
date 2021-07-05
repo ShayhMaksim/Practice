@@ -2,8 +2,31 @@ import gym
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-env = gym.make('CartPole-v0')
+
 torch.autograd.set_detect_anomaly(True)
+
+from collections import defaultdict
+import torch
+from Map import Map
+from PyQt5.QtCore import QRectF
+from PyQt5.QtGui import QBrush, QColor
+import numpy as np
+import pandas as pd
+from PyQt5.QtWidgets import QWidget,QApplication,QGraphicsView,QGraphicsScene
+import sys
+from BadZone import BadZone
+
+
+zone1=BadZone(10,10,25,12)
+zone2=BadZone(5,5,7,25)
+zone3=BadZone(23,20,25,28)
+
+
+Map.AddWalls([zone1,zone2,zone3])
+game=Map.reset()
+
+app = QApplication(sys.argv)
+
 
 class PolicyNetwork():
     def __init__(self, n_state, n_action, n_hidden=50, lr=0.001):
@@ -114,11 +137,14 @@ def reinforce(env, estimator_policy, estimator_value,n_episode, gamma=1.0):
         log_probs = []
         states = []
         rewards = []
-        state = env.reset()
+        env=Map.reset()
+        state=env.posPlayer()
         while True:
-            states.append(state)
-            action, log_prob = estimator_policy.get_action(state)
-            next_state, reward, is_done, _ = env.step(action)
+            one_hot_state = [0]*env.observation
+            one_hot_state[state] = 1
+            states.append(one_hot_state)
+            action, log_prob = estimator_policy.get_action(one_hot_state)
+            next_state, reward, is_done = env.step(action)
             total_reward_episode[episode] += reward
             log_probs.append(log_prob)
             rewards.append(reward)
@@ -143,20 +169,20 @@ def reinforce(env, estimator_policy, estimator_value,n_episode, gamma=1.0):
                 break
             state = next_state
 
-n_state = env.observation_space.shape[0]
-n_action = env.action_space.n
-n_hidden_p = 64
+n_state = game.observation
+n_action = game.player.action_space
+n_hidden_p = 8
 lr_p = 0.003
 policy_net = PolicyNetwork(n_state, n_action, n_hidden_p, lr_p)
 
-n_hidden_v = 64
+n_hidden_v = 8
 lr_v = 0.003
 value_net = ValueNetwork(n_state, n_hidden_v, lr_v)
 gamma = 0.9
 
 n_episode = 500
 total_reward_episode = [0] * n_episode
-reinforce(env, policy_net, value_net, n_episode, gamma)
+reinforce(game, policy_net, value_net, n_episode, gamma)
 
 import matplotlib.pyplot as plt
 plt.plot(total_reward_episode)
@@ -164,3 +190,45 @@ plt.title('Зависимость вознаграждения в эпизоде
 plt.xlabel('Эпизод')
 plt.ylabel('Полное вознаграждение')
 plt.show()
+
+game=Map(3,3,27,27)
+state=game.posPlayer()
+#env.render()
+is_done=False
+while not is_done:
+    one_hot_state = [0]*game.observation
+    one_hot_state[state] = 1
+    action, log_prob, state_value = policy_net.get_action(one_hot_state)
+    next_state,reward,is_done=game.step(action)
+    state=next_state
+    #env.render()
+
+scene = QGraphicsScene()
+graphicsView = QGraphicsView(scene)
+graphicsView.show()
+graphicsView.resize(1000,1000)
+
+i=0
+j=0
+c=18
+
+while i<30:
+    while j<30:
+        if game.chart[i][j]==1:#барьер
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,0,255),QBrush(QColor(0,0,255)))
+        if game.chart[i][j]==2:#финиш
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,0,0),QBrush(QColor(255,0,0)))
+        if game.chart[i][j]==3:#текущее положение игрока
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,0),QBrush(QColor(0,255,0)))
+        if game.chart[i][j]==4:#опасные зоны
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,155,150),QBrush(QColor(255,155,150)))
+        if game.chart[i][j]==5:#зоны в которых побывали
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,155,150),QBrush(QColor(0,155,150)))
+        if game.chart[i][j]==0:#неразведованные зоны
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,255))
+        j=j+1
+    i=i+1
+    j=0
+
+
+sys.exit(app.exec())

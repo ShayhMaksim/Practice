@@ -39,11 +39,24 @@ class Map:
     @classmethod 
     def reset(self):
         #Map(random.randint(2,15),random.randint(2,15),45,45)
-        x=random.randint(2,4)
-        y=random.randint(2,4)
-        if x == 27 and y == 27:
-            x=2
-            y=2
+        x=random.randint(2,25)
+        y=random.randint(2,25)
+        
+        # zone1=BadZone(10,10,20,15)
+        # zone2=BadZone(5,5,7,15)
+        # zone3=BadZone(23,20,25,28)
+        if 10<=x<=20 and 10<=y<=15:
+            x=3
+            y=3
+
+        if 5<=x<=7 and 5<=y<=15:
+            x=3
+            y=3
+
+        if 23<=x<=25 and 20<=y<=28:
+            x=3
+            y=3
+
         return Map(3,3,27,27)#Map(5,5,45,45)
     
     def posPlayer(self):

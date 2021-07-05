@@ -6,11 +6,13 @@ import pandas as pd
 from PyQt5.QtWidgets import QWidget,QApplication,QGraphicsView,QGraphicsScene
 import sys
 from BadZone import BadZone
+
+zone1=BadZone(10,10,25,12)
+zone2=BadZone(5,5,7,25)
+zone3=BadZone(23,20,25,28)
+
+Map.AddWalls([zone1,zone2,zone3])
 mapp=Map.reset()
-# zone1=BadZone(30,30,40,40)
-# zone2=BadZone(15,15,18,30)
-# zone3=BadZone(18,30,30,32)
-# mapp.AddWalls([zone1,zone2,zone3])
 
 app = QApplication(sys.argv)
 scene = QGraphicsScene()
@@ -44,27 +46,27 @@ while i<30:
 #mapp.step(3)
 #mapp.step(4)
 
-def Update():
-    scene.clear()
-    i=0
-    j=0
-    while i<50:
-        while j<50:
-            if mapp.chart[i][j]==1:
-                scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,0,255),QBrush(QColor(0,0,255)))
-            if mapp.chart[i][j]==2:
-                scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,0,0),QBrush(QColor(255,0,0)))
-            if mapp.chart[i][j]==3:
-                scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,0),QBrush(QColor(0,255,0)))
-            if mapp.chart[i][j]==4:
-                scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,155,150),QBrush(QColor(255,155,150)))
-            if mapp.chart[i][j]==0:
-                scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,255))
-            j=j+1
-        i=i+1
-        j=0
+# def Update():
+#     scene.clear()
+#     i=0
+#     j=0
+#     while i<30:
+#         while j<30:
+#             if mapp.chart[i][j]==1:
+#                 scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,0,255),QBrush(QColor(0,0,255)))
+#             if mapp.chart[i][j]==2:
+#                 scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,0,0),QBrush(QColor(255,0,0)))
+#             if mapp.chart[i][j]==3:
+#                 scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,0),QBrush(QColor(0,255,0)))
+#             if mapp.chart[i][j]==4:
+#                 scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,155,150),QBrush(QColor(255,155,150)))
+#             if mapp.chart[i][j]==0:
+#                 scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,255))
+#             j=j+1
+#         i=i+1
+#         j=0
 
-Update()
+# Update()
 #graphicsView.update()
 
 

@@ -10,23 +10,25 @@ import sys
 from BadZone import BadZone
 
 
-zone1=BadZone(10,10,20,15)
-zone2=BadZone(5,5,7,15)
-Map.AddWalls([zone1,zone2])
+zone1=BadZone(10,10,25,12)
+zone2=BadZone(5,5,7,25)
+zone3=BadZone(23,20,25,28)
+
+Map.AddWalls([zone1,zone2,zone3])
 game=Map.reset()
 
 app = QApplication(sys.argv)
 
 n_episode=5000
 #q_learning
-# gamma=1
-# alpha=0.3
-# epsilon=0.1
+gamma=1
+alpha=0.4
+epsilon=0.1
 
 #sarsa
-epsilon=0.03
-alpha=0.4
-gamma=1
+# epsilon=0.03
+# alpha=0.4
+# gamma=0.05
 
 length_episode=[0] * n_episode
 total_reward_episode=[0] * n_episode
@@ -151,7 +153,7 @@ def sarsa(env, gamma, n_episode, alpha):
 
 
 
-optimal_Q,optimal_policy=sarsa(game,gamma,n_episode,alpha)
+optimal_Q,optimal_policy=q_learning(game,gamma,n_episode,alpha)
 
 # alpha_options = [0.3,0.4, 0.5, 0.6]
 # epsilon_options = [0.2,0.1, 0.03, 0.01]

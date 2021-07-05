@@ -15,9 +15,12 @@ import sys
 from BadZone import BadZone
 
 
-zone1=BadZone(10,10,20,15)
-zone2=BadZone(5,5,7,15)
-Map.AddWalls([zone1,zone2])
+zone1=BadZone(10,10,25,12)
+zone2=BadZone(5,5,7,25)
+zone3=BadZone(23,20,25,28)
+
+
+Map.AddWalls([zone1,zone2,zone3])
 game=Map.reset()
 
 app = QApplication(sys.argv)
@@ -118,21 +121,21 @@ def actor_critic(env, estimator, n_episode, gamma=1.0):
                 returns = (returns - returns.mean()) / (returns.std() + 1e-9)
                 estimator.update(returns, log_probs, state_values)
                 print('Эпизод: {}, полное вознаграждение: {}'.format(episode, total_reward_episode[episode]))
-                if total_reward_episode[episode] >= 450:
+                if total_reward_episode[episode] >= -11:
                     estimator.scheduler.step()
                 break
             state = next_state
 
 n_state = game.observation
 n_action = game.player.action_space
-n_hidden = 128
+n_hidden = 256
 
 lr = 0.03
 policy_net = PolicyNetwork(n_state, n_action, n_hidden, lr)
 
-gamma = 0.9
+gamma = 0.95
 
-n_episode = 1500
+n_episode = 2500
 total_reward_episode = [0] * n_episode
 actor_critic(game, policy_net, n_episode, gamma)
 
