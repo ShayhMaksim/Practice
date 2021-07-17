@@ -98,36 +98,41 @@ def q_learning(env, estimator, n_episode, gamma=1.0,epsilon=0.1, epsilon_decay=.
             estimator.update(one_hot_state, q_values)
             state = next_state
         print('Эпизод: {}, полное вознаграждение: {}, epsilon:{}'.format(episode,total_reward_episode[episode], epsilon))
-        epsilon = max(epsilon * epsilon_decay, 0.3)
+        epsilon = max(epsilon * epsilon_decay, 0.01)
 
 n_state = game.observation
 n_action = game.player.action_space
 n_hidden = 64
 
-lr = 0.01
+lr = 0.00001
 dqn = DQN(n_state, n_action, n_hidden, lr)
 
-n_episode = 3000
-total_reward_episode = [0] * n_episode
-q_learning(game, dqn, n_episode, gamma=.99, epsilon=.4)
+# n_episode = 1000
+# total_reward_episode = [0] * n_episode
+# q_learning(game, dqn, n_episode, gamma=.99, epsilon=.3)
 
-torch.save(dqn.model,'model/DQN')
-# import matplotlib.pyplot as plt
+# torch.save(dqn.model,'model/DQN')
+model=torch.load('model/DQN')
+dqn.model=model
+import matplotlib.pyplot as plt
 
-# game=Map(3,3,27,27)
-# state=game.posPlayer()
-# #env.render()
-# policy = gen_epsilon_greedy_policy(dqn, .0, n_action)
-# is_done=False
-# while not is_done:
-#     one_hot_state = [0]*game.observation
-#     one_hot_state[state] = 1
-    
-#     action = policy(one_hot_state)
-#     next_state,reward,is_done=game.step(action)
-#     state=next_state
-#     #env.render()
+game=Map(3,3,27,27)
+state=game.posPlayer()
+#env.render()
+policy = gen_epsilon_greedy_policy(dqn, .4, n_action)
+is_done=False
+total=0
+while not is_done:
+    one_hot_state = [0]*game.observation
+    one_hot_state[state] = 1
+    action = policy(one_hot_state)
+    next_state, reward, is_done = game.step(action)
+    next_state,reward,is_done=game.step(action)
+    state=next_state
+    total+=reward
+    #env.render()
 
+print('Полное вознаграждение: {}'.format(total))
 
 # plt.plot(total_reward_episode)
 # plt.title('Зависимсоть вознаграждения в эпизоде от времени')
@@ -136,32 +141,32 @@ torch.save(dqn.model,'model/DQN')
 # plt.show()
 
 
-# scene = QGraphicsScene()
-# graphicsView = QGraphicsView(scene)
-# graphicsView.show()
-# graphicsView.resize(1000,1000)
+scene = QGraphicsScene()
+graphicsView = QGraphicsView(scene)
+graphicsView.show()
+graphicsView.resize(1000,1000)
 
-# i=0
-# j=0
-# c=18
+i=0
+j=0
+c=18
 
-# while i<30:
-#     while j<30:
-#         if game.chart[i][j]==1:#барьер
-#             scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,0,255),QBrush(QColor(0,0,255)))
-#         if game.chart[i][j]==2:#финиш
-#             scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,0,0),QBrush(QColor(255,0,0)))
-#         if game.chart[i][j]==3:#текущее положение игрока
-#             scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,0),QBrush(QColor(0,255,0)))
-#         if game.chart[i][j]==4:#опасные зоны
-#             scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,155,150),QBrush(QColor(255,155,150)))
-#         if game.chart[i][j]==5:#зоны в которых побывали
-#             scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,155,150),QBrush(QColor(0,155,150)))
-#         if game.chart[i][j]==0:#неразведованные зоны
-#             scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,255))
-#         j=j+1
-#     i=i+1
-#     j=0
+while i<30:
+    while j<30:
+        if game.chart[i][j]==1:#барьер
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,0,255),QBrush(QColor(0,0,255)))
+        if game.chart[i][j]==2:#финиш
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,0,0),QBrush(QColor(255,0,0)))
+        if game.chart[i][j]==3:#текущее положение игрока
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,0),QBrush(QColor(0,255,0)))
+        if game.chart[i][j]==4:#опасные зоны
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(255,155,150),QBrush(QColor(255,155,150)))
+        if game.chart[i][j]==5:#зоны в которых побывали
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,155,150),QBrush(QColor(0,155,150)))
+        if game.chart[i][j]==0:#неразведованные зоны
+            scene.addRect(QRectF(i*c,j*c,c,c),QColor(0,255,255))
+        j=j+1
+    i=i+1
+    j=0
 
 
-# sys.exit(app.exec())
+sys.exit(app.exec())

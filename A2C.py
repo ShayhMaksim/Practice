@@ -29,6 +29,7 @@ class ActorCriticModel(nn.Module):
     def __init__(self, n_input, n_output, n_hidden):
         super(ActorCriticModel, self).__init__()
         self.fc = nn.Linear(n_input, n_hidden)
+        self.fc2 = nn.Linear(n_hidden, n_hidden)
         self.action = nn.Linear(n_hidden, n_output)
         self.value = nn.Linear(n_hidden, 1)
     def forward(self, x):
@@ -88,11 +89,13 @@ class PolicyNetwork():
 def actor_critic(env, estimator, n_episode, gamma=1.0):
     """
     Алгоритм исполнитель–критик
-    @param env: имя окружающей среды Gym
+    @param env: имя окружающей среды
     @param estimator: сеть стратегии
     @param n_episode: количество эпизодов
     @param gamma: коэффициент обесценивания
     """
+    Scheduler=0
+    Bonus=-13
     for episode in range(n_episode):
         log_probs = []
         rewards = []
@@ -120,30 +123,38 @@ def actor_critic(env, estimator, n_episode, gamma=1.0):
                 returns = torch.tensor(returns)
                 returns = (returns - returns.mean()) / (returns.std() + 1e-9)
                 estimator.update(returns, log_probs, state_values)
+                
                 print('Эпизод: {}, полное вознаграждение: {}'.format(episode, total_reward_episode[episode]))
-                if total_reward_episode[episode] >= -11:
+                if total_reward_episode[episode] >= Bonus:
                     estimator.scheduler.step()
+                    Scheduler+=1
+                    if Scheduler>=100:
+                        Bonus=Bonus+1
+                        Scheduler=0
                 break
             state = next_state
 
 n_state = game.observation
 n_action = game.player.action_space
-n_hidden = 256
+n_hidden = 128+32
 
-lr = 0.03
+lr = 0.01
 policy_net = PolicyNetwork(n_state, n_action, n_hidden, lr)
 
-gamma = 0.95
+gamma = 1
 
-n_episode = 2500
+n_episode = 2000
 total_reward_episode = [0] * n_episode
 actor_critic(game, policy_net, n_episode, gamma)
+
+torch.save(policy_net.model,'model/A2C8')
 
 import matplotlib.pyplot as plt
 plt.plot(total_reward_episode)
 plt.title('Зависимость вознаграждения в эпизоде от времени')
 plt.xlabel('Эпизод')
 plt.ylabel('Полное вознаграждение')
+plt.savefig('Зависимсоть вознаграждения в эпизоде от времени A2C2')
 plt.show()
 
 
@@ -158,6 +169,10 @@ while not is_done:
     next_state,reward,is_done=game.step(action)
     state=next_state
     #env.render()
+
+data={'Полное вознаграждение':total_reward_episode}
+df = pd.DataFrame(data)
+df.to_csv('A2C2')
 
 scene = QGraphicsScene()
 graphicsView = QGraphicsView(scene)

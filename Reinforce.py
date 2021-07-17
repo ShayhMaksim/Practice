@@ -171,16 +171,16 @@ def reinforce(env, estimator_policy, estimator_value,n_episode, gamma=1.0):
 
 n_state = game.observation
 n_action = game.player.action_space
-n_hidden_p = 8
-lr_p = 0.003
+n_hidden_p = 64
+lr_p = 0.02
 policy_net = PolicyNetwork(n_state, n_action, n_hidden_p, lr_p)
 
-n_hidden_v = 8
-lr_v = 0.003
+n_hidden_v = 64
+lr_v = 0.02
 value_net = ValueNetwork(n_state, n_hidden_v, lr_v)
-gamma = 0.9
+gamma = 0.95
 
-n_episode = 500
+n_episode = 1000
 total_reward_episode = [0] * n_episode
 reinforce(game, policy_net, value_net, n_episode, gamma)
 
